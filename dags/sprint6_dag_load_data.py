@@ -1,6 +1,7 @@
 from airflow.decorators import dag, task
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
+from airflow.models import Variable
 import pandas as pd
 import pendulum
 import boto3
@@ -58,10 +59,10 @@ def load_data(key: str):
 
 @task
 def get_data(key: str, src_folder: str):
+  
+    AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
 
-    AWS_ACCESS_KEY_ID = "YCAJEWXOyY8Bmyk2eJL-hlt2K"
-    AWS_SECRET_ACCESS_KEY = "YCPs52ajb2jNXxOUsL4-pFDL1HnV2BCPd928_ZoA" 
-    
     session = boto3.Session()
     s3_client = session.client(
         service_name='s3',
@@ -93,14 +94,14 @@ def sprint6_dag_load_data():
     task_dict_get = {}
     for bucket in files:
         #task_dict_get[bucket] = get_data.override(task_id=f'fetch_{bucket}')(bucket, SOURCE_FOLDER)
-        task_dict_get[bucket] = get_data(bucket, SOURCE_FOLDER)
+        task_dict_get[bucket] = get_data(bucket, SOURCE_FOLDER, task_id=f'fetch_{bucket}')
     #Если давать имена таскам,то они почему-то не будут отображаться в grid
     #Преподаватель не дал ответа почему так
     # for file in files:
     #     task_dict_get[file] = PythonOperator(
     #         task_id=f'fetch_{file}',
     #         python_callable=get_data,
-    #         op_kwargs={'key': file,'src_folder': source_folder} 
+    #         op_kwargs={'key': file,'src_folder': SOURCE_FOLDER} 
     #     )
 
     bash_command_tmpl=bash_command_tmpl = """
