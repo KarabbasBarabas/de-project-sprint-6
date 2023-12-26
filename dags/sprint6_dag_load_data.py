@@ -12,6 +12,8 @@ import logging
 SOURCE_FOLDER = '/data'
 SCHEMA_NAME = 'STV2023111337__STAGING'
 ESCAPE = '\\'
+AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
 
 def add_escape(file_name: str, columns: dict, delimiter:str=',',escape:str=ESCAPE):
     file_path = f"{SOURCE_FOLDER}/{file_name}"
@@ -58,11 +60,8 @@ def load_data(key: str):
 
 
 @task
-def get_data(key: str, src_folder: str):
+def get_data(key: str, src_folder: str, **kwargs):
   
-    AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
-
     session = boto3.Session()
     s3_client = session.client(
         service_name='s3',
